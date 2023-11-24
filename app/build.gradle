@@ -1,7 +1,12 @@
+import com.lcy.plugin.MyExtension
+
 plugins {
     id 'com.android.application'
+    id 'MyPlugin'
 }
-
+MyExtension{
+    name "配置的属性"
+}
 android {
     namespace 'com.lcy.gradleplugin'
     compileSdk 33
