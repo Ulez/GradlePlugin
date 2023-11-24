@@ -1,7 +1,4 @@
-plugins {
-    id 'java-library'
-}
-
+println("hello buildSrc")
 java {
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
