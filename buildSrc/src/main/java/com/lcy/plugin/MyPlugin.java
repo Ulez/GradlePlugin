@@ -7,6 +7,7 @@ import org.gradle.api.Project;
 public class MyPlugin implements Plugin<Project> {
     @Override
     public void apply(Project target) {
+        System.out.println("afterEvaluate execute 000000" );
         final MyExtension x = target.getExtensions().create("MyExtension", MyExtension.class);
         target.afterEvaluate(new Action<Project>() {
             @Override
