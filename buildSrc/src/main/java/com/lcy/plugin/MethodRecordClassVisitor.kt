@@ -6,7 +6,8 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.commons.AdviceAdapter
 
 class MethodRecordClassVisitor(nextVisitor: ClassVisitor, private val className: String) :
-    ClassVisitor(Opcodes.ASM5, nextVisitor) {
+    ClassVisitor(Opcodes.ASM9, nextVisitor) {
+
     override fun visitMethod(
         access: Int,
         name: String?,
@@ -14,55 +15,78 @@ class MethodRecordClassVisitor(nextVisitor: ClassVisitor, private val className:
         signature: String?,
         exceptions: Array<out String>?
     ): MethodVisitor {
-        System.out.println("lcyy MethodRecordClassVisitor")
         val methodVisitor = super.visitMethod(access, name, descriptor, signature, exceptions)
-        val newMethodVisitor =
-            object : AdviceAdapter(Opcodes.ASM5, methodVisitor, access, name, descriptor) {
-
-                @Override
-                override fun onMethodEnter() {
-                    // 方法开始
-                    if (isNeedVisiMethod() && descriptor != null) {
-                        val parametersIdentifier = MethodRecordUtil.newParameterArrayList(mv, this)
-                        MethodRecordUtil.fillParameterArray(
-                            methodDesc, mv, parametersIdentifier, access
-                        )
-                        MethodRecordUtil.onMethodEnter(mv, className, name, parametersIdentifier)
-                    }
-                    super.onMethodEnter()
-                }
-
-                @Override
-                override fun onMethodExit(opcode: Int) {
-                    // 方法结束
-                    if (isNeedVisiMethod()) {
-                        if ((opcode in IRETURN..RETURN) || opcode == ATHROW) {
-                            when (opcode) {
-                                in IRETURN..DRETURN -> {
-                                    MethodRecordUtil.loadReturnData(mv, methodDesc)
-                                    MethodRecordUtil.onMethodExit(mv, className, name, methodDesc)
-                                }
-                                ARETURN -> {
-                                    mv.visitInsn(DUP)
-                                    MethodRecordUtil.onMethodExit(mv, className, name, methodDesc)
-                                }
-                                RETURN -> {
-                                    mv.visitLdcInsn("void")
-                                    MethodRecordUtil.onMethodExit(mv, className, name, methodDesc)
-                                }
-                                else -> {
-                                }
-                            }
-                        }
-                    }
-                    super.onMethodExit(opcode);
-                }
+        return object : AdviceAdapter(Opcodes.ASM9, methodVisitor, access, name, descriptor) {
+            override fun onMethodEnter() {
+                visitMethodInsn(
+                    INVOKESTATIC,
+                    "java/lang/System",
+                    "currentTimeMillis",
+                    "()J",
+                    false
+                );
+                visitVarInsn(LSTORE, 1);
+                super.onMethodEnter()
             }
-        return newMethodVisitor
+
+            override fun onMethodExit(opcode: Int) {
+                visitLdcInsn("lcyy");
+                visitTypeInsn(NEW, "java/lang/StringBuilder");
+                visitInsn(DUP);
+                visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
+                visitLdcInsn("method cost = ");
+                visitMethodInsn(
+                    INVOKEVIRTUAL,
+                    "java/lang/StringBuilder",
+                    "append",
+                    "(Ljava/lang/String;)Ljava/lang/StringBuilder;",
+                    false
+                );
+                visitMethodInsn(
+                    INVOKESTATIC,
+                    "java/lang/System",
+                    "currentTimeMillis",
+                    "()J",
+                    false
+                );
+                visitVarInsn(LLOAD, 1);
+                visitInsn(LSUB);
+                visitMethodInsn(
+                    INVOKEVIRTUAL,
+                    "java/lang/StringBuilder",
+                    "append",
+                    "(J)Ljava/lang/StringBuilder;",
+                    false
+                );
+                visitLdcInsn("ms,  $className:$methodDesc");
+                visitMethodInsn(
+                    INVOKEVIRTUAL,
+                    "java/lang/StringBuilder",
+                    "append",
+                    "(Ljava/lang/String;)Ljava/lang/StringBuilder;",
+                    false
+                );
+                visitMethodInsn(
+                    INVOKEVIRTUAL,
+                    "java/lang/StringBuilder",
+                    "toString",
+                    "()Ljava/lang/String;",
+                    false
+                );
+                visitMethodInsn(
+                    INVOKESTATIC,
+                    "android/util/Log",
+                    "i",
+                    "(Ljava/lang/String;Ljava/lang/String;)I",
+                    false
+                );
+                visitInsn(Opcodes.POP); // 弹出返回值
+                super.onMethodExit(opcode);
+            }
+        }
     }
 
     private fun isNeedVisiMethod(): Boolean {
-        val filterClassList = listOf("MethodRecordItem", "MethodRecorder")
-        return filterClassList.none { className.contains(it) }
+        return true
     }
 }
