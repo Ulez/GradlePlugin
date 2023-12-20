@@ -3,7 +3,7 @@ import com.lcy.plugin.MyExtension
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'MyPlugin'
+    id 'com.lcy.time.cost'
 }
 //MyExtension{
 //    name "luochunyou"

@@ -30,7 +30,7 @@ class MethodRecordClassVisitor(nextVisitor: ClassVisitor, private val className:
             }
 
             override fun onMethodExit(opcode: Int) {
-                visitLdcInsn("lcyy");
+                visitLdcInsn("lcy_cost");
                 visitTypeInsn(NEW, "java/lang/StringBuilder");
                 visitInsn(DUP);
                 visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
