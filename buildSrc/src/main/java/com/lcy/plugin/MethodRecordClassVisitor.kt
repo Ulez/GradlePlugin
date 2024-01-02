@@ -18,75 +18,25 @@ class MethodRecordClassVisitor(nextVisitor: ClassVisitor, private val className:
         val methodVisitor = super.visitMethod(access, name, descriptor, signature, exceptions)
         return object : AdviceAdapter(Opcodes.ASM9, methodVisitor, access, name, descriptor) {
             override fun onMethodEnter() {
-                visitMethodInsn(
-                    INVOKESTATIC,
-                    "java/lang/System",
-                    "currentTimeMillis",
-                    "()J",
-                    false
-                );
-                visitVarInsn(LSTORE, 1);
+                if (isNeedVisiMethod()){
+                    visitLdcInsn(name)
+                    visitMethodInsn(INVOKESTATIC, "com/lcy/gradleplugin/Recorder", "i", "(Ljava/lang/String;)V", false);
+                }
                 super.onMethodEnter()
             }
 
             override fun onMethodExit(opcode: Int) {
-                visitLdcInsn("lcy_cost");
-                visitTypeInsn(NEW, "java/lang/StringBuilder");
-                visitInsn(DUP);
-                visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
-                visitLdcInsn("method cost = ");
-                visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    "java/lang/StringBuilder",
-                    "append",
-                    "(Ljava/lang/String;)Ljava/lang/StringBuilder;",
-                    false
-                );
-                visitMethodInsn(
-                    INVOKESTATIC,
-                    "java/lang/System",
-                    "currentTimeMillis",
-                    "()J",
-                    false
-                );
-                visitVarInsn(LLOAD, 1);
-                visitInsn(LSUB);
-                visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    "java/lang/StringBuilder",
-                    "append",
-                    "(J)Ljava/lang/StringBuilder;",
-                    false
-                );
-                visitLdcInsn("ms,  $className:$methodDesc");
-                visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    "java/lang/StringBuilder",
-                    "append",
-                    "(Ljava/lang/String;)Ljava/lang/StringBuilder;",
-                    false
-                );
-                visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    "java/lang/StringBuilder",
-                    "toString",
-                    "()Ljava/lang/String;",
-                    false
-                );
-                visitMethodInsn(
-                    INVOKESTATIC,
-                    "android/util/Log",
-                    "i",
-                    "(Ljava/lang/String;Ljava/lang/String;)I",
-                    false
-                );
-                visitInsn(Opcodes.POP); // 弹出返回值
-                super.onMethodExit(opcode);
+                if (isNeedVisiMethod()){
+                    visitLdcInsn(name)
+                    visitMethodInsn(INVOKESTATIC, "com/lcy/gradleplugin/Recorder", "o", "(Ljava/lang/String;)V", false);
+                }
+                super.onMethodExit(opcode)
             }
         }
     }
 
     private fun isNeedVisiMethod(): Boolean {
-        return true
+        val filterClassList = listOf("Recorder")
+        return filterClassList.none { className.contains(it) }
     }
 }

@@ -5,6 +5,11 @@ import android.util.Log;
 
 class Test {
     public void aaaa() {
-        SystemClock.sleep(1000);
+        SystemClock.sleep(512);
+    }
+
+    public int bbb(int a, int b) {
+        SystemClock.sleep(512);
+        return a + b;
     }
 }
