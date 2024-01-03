@@ -12,4 +12,9 @@ class Test {
         SystemClock.sleep(512);
         return a + b;
     }
+
+    public String ccc(String a, int b) {
+        SystemClock.sleep(512);
+        return a + b;
+    }
 }

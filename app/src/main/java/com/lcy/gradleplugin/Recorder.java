@@ -7,7 +7,7 @@ import android.util.Log;
 import java.util.HashMap;
 
 public class Recorder {
-    private static final String TAG = "MethodBeat";
+    private static final String TAG = "MethodRecorder";
     private static HashMap<String, Long> upTimeMap = new HashMap<>();
     private static long sMainThreadId = Looper.getMainLooper().getThread().getId();
 
